@@ -6,6 +6,7 @@ from analyzer import (
     find_slow_requests,
     top_ips
 )
+from report import generate_csv_report
 
 # graceful handling
 valid_lines = 0
@@ -26,16 +27,7 @@ with open("../tests/sample.log", "r") as file:
         else:
             malformed_lines += 1
 
-print("\nSummary")
-print("Valid lines:", valid_lines)
-print("Malformed lines:", malformed_lines)
-print(count_status_codes(logs))
-print(count_endpoints(logs).most_common(5))
+report_file = generate_csv_report(logs)
 
-print("\nSlow Request")
-slow_requests = find_slow_requests(logs, threshold=500)
-
-for request in slow_requests:
-    print(request)
-
-print(top_ips(logs))
+print("\nCSV report generated:")
+print(report_file)
