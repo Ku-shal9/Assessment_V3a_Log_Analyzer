@@ -2,7 +2,13 @@
 # contains timestamp, ip, method, path, status, and response time
 
 def parsed_line(line): #tokenization
+    # removing whitspaces first
+    line = line.strip()
     args = line.split()
+
+    # handling missing line
+    if not line:
+        return None
 
     parsed_data = {
         "timestamp": args[0],
