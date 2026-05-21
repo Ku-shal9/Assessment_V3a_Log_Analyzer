@@ -99,44 +99,52 @@ def parse_standard_log(line):
 
     groups = match.groupdict()
 
+    # validate status
     status = groups.get("status")
 
+    try:
+        status = int(status) if status and status != "-" else None
+    except ValueError:
+        return None
+
+    # validate response time
+    response_time = parse_response_time(
+        groups.get("response", "0")
+    )
+
+    if response_time is None:
+        return None
+
+    # validate timestamp
+    timestamp = parse_timestamp(groups.get("timestamp", ""))
+
     return {
-        "timestamp": parse_timestamp(groups.get("timestamp", "")),
+        "timestamp": timestamp,
         "ip": groups.get("ip"),
         "method": groups.get("method"),
         "path": groups.get("path"),
-        "status": int(status) if status and status != "-" else None,
-        "response_time": parse_response_time(
-            groups.get("response", "0")
-        ),
+        "status": status,
+        "response_time": response_time,
         "source": "standard"
     }
 
-def parsed_line(line): 
-    # removing whitspaces first
+def parsed_line(line):
+
+    # remove whitespace
     line = line.strip()
 
-    # handling missing line
+    # empty line protection
     if not line:
         return None
-    
+
     try:
-        #tokenization
-        args = line.split()
 
-        # Extract fields
-        parsed_data = {
-            "timestamp": args[0],
-            "ip": args[1],
-            "method": args[2],
-            "path": args[3],
-            "status": int(args[4]) if args[4] != "-" else None,
-            "response_time": args[5]
-        }
+        # JSON log
+        if line.startswith("{"):
+            return parse_json_log(line)
 
-        return parsed_data
+        # standard regex log
+        return parse_standard_log(line)
 
     except Exception:
-        # If anything fails, return None instead of crashing
         return None
