@@ -1,12 +1,8 @@
 2024-03-15T14:23:01Z 192.168.1.42 GET /api/users 200 142ms
-2024-03-15T14:23:02Z 10.0.0.7 POST /api/login 401 89ms
-2024-03-15T14:23:04Z 192.168.1.42 GET /api/users/12 200 53ms
-
-2024-03-15T14:23:01Z 192.168.1.42 GET /api/users 200 142ms
-2024-03-15T14:23:02Z 10.0.0.7 POST /api/login 401 89ms
-
+2024/03/15 14:23:01 10.0.0.7 POST /api/login 401 0.142s
+15-Mar-2024 14:23:01 192.168.1.99 GET /api/orders 500 320ms
+1710512581 172.16.0.1 GET /api/products 200 90ms
+2024-03-15T14:23:01Z 192.168.1.42 GET /api/users - 142ms
+{"timestamp":"2024-03-15T14:23:01Z","ip":"10.0.0.5","method":"GET","path":"/api/json","status":200,"response_time":"0.200s"}
 BROKEN LOG ENTRY
-
-2024-03-15T14:23:04Z 192.168.1.42 GET /api/users/12 200 53ms
-
-INVALID INVALID INVALID
+@@@@@@@
