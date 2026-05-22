@@ -13,10 +13,8 @@ pip install pandas
 ## Run
 
 ```bash
-cd /path/to/log-analyzer
 python3 scripts/generate_logs.py
-cd app
-python3 main.py
+python3 app/main.py
 ```
 
 Output: `app/log_report.csv`

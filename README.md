@@ -15,14 +15,6 @@ pip install pandas
 From the project root:
 
 ```bash
-cd app
-python3 main.py /path/to/your.log
+python3 scripts/generate_logs.py
+python3 app/main.py
 ```
-
-Default (uses `tests/sample.log` if you omit the path):
-
-```bash
-python3 main.py
-```
-
-Output: `app/log_report.csv`
