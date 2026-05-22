@@ -12,9 +12,14 @@ pip install pandas
 
 ## Run
 
+From the project root:
+
 ```bash
-python3 scripts/generate_logs.py
-python3 app/main.py
+cd scripts
+python3 generate_logs.py
+
+cd ../app
+python3 main.py
 ```
 
 Output: `app/log_report.csv`
