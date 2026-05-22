@@ -40,7 +40,7 @@ To be honest for this project, using a heavy frontend stack, such as React or No
 Why to read line-by-line? It is because the testing ranges as defined in instruction ranges from few hundreds to few hundred thousands. If everything is loaded at once, the RAM will be fully occupied and the CPU will be steaming out.
 ```
 
-# Edge-Case Handled: Two-token timestamp
+# Q3: Edge-Case Handled: Two-token timestamp
 
 ## What was handled?
 
@@ -57,7 +57,7 @@ Line:  The multi-token behavior is extract_timestamp_prefix (lines 31–43), cal
 As said earlier if this was not handled, then the entire field tokens will be shifted and the logic will fail instantly. If the program doesn't find the specific field on specific token, it would either crash or produce wrong data.
 ```
 
-# AI Usage
+# Q4: AI Usage
 
 ### Question to ChatGPT
 
@@ -136,7 +136,7 @@ Eventhough my parser handles many of the cases, it is still not resillient enoug
 Focus on predictable behavior, skip what you can't parse, count it, parse everything that matches your rules, while nor pretending a skipped line was analyzed.
 ```
 
-# Honest Gap
+# Q5: Honest Gap
 
 ### One thing that is not good enough
 
@@ -144,6 +144,10 @@ Focus on predictable behavior, skip what you can't parse, count it, parse everyt
 The parser survives the bad data correctly, but it doesn't explain the failures very well; not so graceful.
 In order to guarantee the safety of the pipeline, it kind of rejects the bad line. So when it sees the unseen data, it might reject tons of them.  This enforces that parser might not be able to distinguish between "true garbage" and "almost valid lines" that failed on one field.
 ```
+
+### How i found the gap?
+
+> I consulted with my professor who also handles the college server. I showed him the project and with the help of him, I was able to get actual server logs from college. While it was handling the timestamps in some-cases, the analyzer couldn't extract any meaningful information.
 
 ### What would i fix in other day?
 
