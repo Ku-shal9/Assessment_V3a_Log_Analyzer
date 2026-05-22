@@ -15,15 +15,31 @@ timestamps_format = [
     "[%d/%b/%Y:%H:%M:%S %z]" #CLF
 ]
 
-# regex pattern for common fields
-log_pattern = re.compile(
-    r"^(?P<timestamp>.+?)\s+"
-    r"(?P<ip>\S+)\s+"
+# fields after the timestamp (timestamp may span multiple tokens)
+rest_pattern = re.compile(
+    r"^(?P<ip>\S+)\s+"
     r"(?P<method>GET|POST|PUT|DELETE|PATCH)?\s*"
     r"(?P<path>/\S+)?\s*"
     r"(?P<status>\d{3}|-)\s*"
     r"(?P<response>[\d\.]+(?:ms|s)?)"
 )
+
+# max tokens to join when probing multi-token timestamps (e.g. "15-Mar-2024 14:23:01")
+MAX_TIMESTAMP_TOKENS = 6
+
+def extract_timestamp_prefix(line):
+    tokens = line.split()
+    if not tokens:
+        return None, None
+
+    for i in range(1, min(len(tokens), MAX_TIMESTAMP_TOKENS) + 1):
+        candidate = " ".join(tokens[:i])
+        timestamp = parse_timestamp(candidate)
+        if timestamp is not None:
+            rest = " ".join(tokens[i:])
+            return timestamp, rest
+
+    return None, None
 
 # parsing the timestamp
 def parse_timestamp(timestamp):
@@ -73,26 +89,42 @@ def parse_json_log(line):
 
     data = json.loads(line)
 
+    status = data.get("status")
+    if status not in (None, "-"):
+        try:
+            status = int(status)
+        except (TypeError, ValueError):
+            status = None
+    else:
+        status = None
+
+    raw_response = data.get("response_time")
+    response_time = (
+        parse_response_time(str(raw_response))
+        if raw_response is not None
+        else None
+    )
+
     return {
         "timestamp": parse_timestamp(str(data.get("timestamp", ""))),
         "ip": data.get("ip"),
         "method": data.get("method"),
         "path": data.get("path"),
-        "status": (
-            int(data["status"])
-            if data.get("status") not in [None, "-"]
-            else None
-        ),
-        "response_time": parse_response_time(
-            str(data.get("response_time", "0"))
-        ),
+        "status": status,
+        "response_time": response_time,
         "source": "json"
     }
 
 # standard log format using regex
 def parse_standard_log(line):
 
-    match = log_pattern.search(line)
+    timestamp, rest = extract_timestamp_prefix(line)
+
+    if timestamp is None or not rest:
+        return None
+
+    # match from start; extra tokens after response time (e.g. user-agent) are ignored
+    match = rest_pattern.match(rest)
 
     if not match:
         return None
@@ -114,9 +146,6 @@ def parse_standard_log(line):
 
     if response_time is None:
         return None
-
-    # validate timestamp
-    timestamp = parse_timestamp(groups.get("timestamp", ""))
 
     return {
         "timestamp": timestamp,

@@ -34,11 +34,36 @@ def random_ip():
     return ".".join(str(random.randint(1, 255)) for _ in range(4))
 
 
-def generate_standard_log():
-    timestamp = (
-        datetime.utcnow() -
-        timedelta(seconds=random.randint(0, 100000))
-    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+def _random_dt():
+    return datetime.utcnow() - timedelta(seconds=random.randint(0, 100000))
+
+
+def _format_timestamp(dt):
+    """Mix single- and multi-token timestamp shapes for parser testing."""
+    formats = [
+        "%Y-%m-%dT%H:%M:%SZ",       # 2024-03-15T14:23:01Z
+        "%Y/%m/%d %H:%M:%S",        # 2024/03/15 14:23:01
+        "%d-%b-%Y %H:%M:%S",        # 15-Mar-2024 14:23:01
+        "%b %d %H:%M:%S",           # Mar 15 14:23:01
+        "[%d/%b/%Y:%H:%M:%S %z]",   # [15/Mar/2024:14:23:01 +0000]
+    ]
+    fmt = random.choice(formats)
+    if fmt.endswith("%z"):
+        return dt.strftime(fmt)
+    return dt.strftime(fmt)
+
+
+def generate_standard_log(multi_token_only=False):
+    dt = _random_dt()
+    if multi_token_only:
+        fmt = random.choice([
+            "%Y/%m/%d %H:%M:%S",
+            "%d-%b-%Y %H:%M:%S",
+            "%b %d %H:%M:%S",
+        ])
+        timestamp = dt.strftime(fmt)
+    else:
+        timestamp = _format_timestamp(dt)
 
     return (
         f"{timestamp} {random_ip()} {random.choice(methods)} "
@@ -47,9 +72,18 @@ def generate_standard_log():
     )
 
 
-def generate_json_log():
+def generate_json_log(multi_token_timestamp=False):
+    dt = _random_dt()
+    if multi_token_timestamp:
+        ts = dt.strftime(random.choice([
+            "%Y/%m/%d %H:%M:%S",
+            "%d-%b-%Y %H:%M:%S",
+        ]))
+    else:
+        ts = dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     return json.dumps({
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "timestamp": ts,
         "ip": random_ip(),
         "method": random.choice(methods),
         "path": random.choice(paths),
@@ -61,13 +95,21 @@ def generate_json_log():
 def main():
     logs = []
 
-    # normal logs
-    for _ in range(50):
+    # normal logs (mixed timestamp formats)
+    for _ in range(40):
         logs.append(generate_standard_log())
 
+    # multi-token timestamp logs
+    for _ in range(15):
+        logs.append(generate_standard_log(multi_token_only=True))
+
     # json logs
-    for _ in range(20):
+    for _ in range(15):
         logs.append(generate_json_log())
+
+    # json logs with multi-token timestamps
+    for _ in range(5):
+        logs.append(generate_json_log(multi_token_timestamp=True))
 
     # malformed logs
     logs.extend(bad_logs)
